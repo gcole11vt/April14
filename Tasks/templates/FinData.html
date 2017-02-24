@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block header_text %}Tasks{% endblock %}
+
+{% block links_text %}
+
+<div class="btn-group-justified">
+    <a href="{% url 'UpdateStepOne' %}" class = "btn btn-primary btn-lg" role="button">Update Company Data - Step One</a>
+    <a href="{% url 'UpdateStepTwo' %}" class = "btn btn-danger btn-lg" role="button">Update Company Data - Step Two</a>
+</div>
+
+<div class="btn-group-justified">
+    <a href="{% url 'findata_newcompany' %}" class = "btn btn-primary btn-lg" role="button">&#13;&#10;New Tickers</a>
+    <a href="{% url 'findata_newcompanymerge' %}" class = "btn btn-danger btn-lg" role="button">Merge New Data</a>
+</div>
+
+<a href="{% url 'findata_runcharts' %}" class = "btn btn-success btn-block btn-lg" role="button">&#13;&#10;Charts</a>
+
+
+{% endblock %}
+
+{% block table %} {% endblock %}

@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block header_text %}Tasks{% endblock %}
+
+{% block links_text %}
+
+<a href="{% url 'LC_NewOriginationData_Clean' %}" class = "btn btn-primary btn-block btn-lg" role="button">Initial Clean</a>
+<a href="#" class = "btn btn-primary btn-block btn-lg" role="button">Combine All Origination Files&#13;&#10;</a>
+<a href="#" class = "btn btn-primary btn-block btn-lg" role="button">Run Charge Offs&#13;&#10;</a>
+<a href="#" class = "btn btn-primary btn-block btn-lg" role="button">Calculate IRRs&#13;&#10;</a>
+<a href="#" class = "btn btn-primary btn-block btn-lg" role="button">Combine IRRs with Origination Data&#13;&#10;</a>
+
+
+
+{% endblock %}
+
+{% block table %} {% endblock %}

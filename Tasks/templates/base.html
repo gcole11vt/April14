@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Types of Tasks</title>
+        <link href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+        <link href="/static/base.css" rel="stylesheet">
+    </head>
+    <body>
+    
+    <nav class="navbar navbar-inverse">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="{% url 'home' %}">Automation</a>
+            </div>
+        <ul class="nav navbar-nav">
+          <li class="active"><a href="{% url 'home' %}">Home</a></li>
+          <li><a href="{% url 'findata_home' %}">Financial Data</a></li>
+          <li><a href="{% url 'LC_NewOriginationData_home' %}">LC New Orig Data</a></li>
+        </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <p class="navbar-text">{% block header_text %}{% endblock %}</p>
+            </ul>
+        </div>
+        </nav>
+    <div class="container">
+       
+        
+               
+                    <div class="text-center">
+                        {% block links_text %}
+                        {% endblock %}
+                    </div>
+        
+        
+            <div class="row">
+                <div class="col-lg-6 col-lg-offset-3">
+                    <div class="text-center">
+                    {% block table %}
+                    {% endblock %}
+                    </div>
+                </div>
+            </div>  
+
+
+        {% block submissions %}
+        {% endblock %}
+        </div>
+                    
+                    </div>
+</body>
+</html>

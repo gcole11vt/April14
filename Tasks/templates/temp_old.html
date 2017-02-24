@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block header_text %}Find Updates to Historical Data{% endblock %}
+
+{% block table %}{% endblock %}
+
+{% block submissions %}
+    <h2>Find information to update</h2>
+    <form method = "POST" id="UpdateStepOne" action="{% block form_action %}{% endblock %}" class="form-horizontal">
+        {{ form.text }}
+        <div class="form-group">
+        <label class="control-label col-sm-2" for="QuarterOrAnnual">Periodicity</label>
+        <div class="col-sm-10">
+            <select class="form-control" id="QuarterOrAnnual">
+            <option>Annual</option>
+            <option>Quarterly</option>
+        </select><br>
+        </div>
+        
+        
+        <label class="control-label col-sm-2 text-nowrap" for="ExcelFilePath">Base File Path</label>
+        <div class="col-sm-10">
+            <input name="ExcelFilePath" class="form-control" placeholder="Base filepath for files" /><br>
+        </div>
+        <input type="submit" value="Submit" />
+        {% csrf_token %}
+        {% if form.errors %}
+            <div class="form-group has-error">
+                <span class="help-block">{{ form.text.errors }}</span>
+            </div>
+        {% endif %}
+        </div>
+    </form>
+
+
+{% endblock %}
