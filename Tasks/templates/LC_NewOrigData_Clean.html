@@ -1,12 +1,12 @@
 {% extends 'base.html' %}
 
-{% block header_text %}{{ header_code }}{% endblock %}
+{% block header_text %}Merge New Companies{% endblock %}
 
 {% block table %}{% endblock %}
 
 {% block submissions %}
-    <h2>{{ title_of_page }}</h2>
-    <form method = "POST" action="{% url code_url %}" class="form-horizontal">
+    <h2>Merge New Companies</h2>
+    <form method = "POST" action="{% url 'LC_NewOriginationData_Clean' %}" class="form-horizontal">
         
         <div class="form-group">
         <div class="col-md">
