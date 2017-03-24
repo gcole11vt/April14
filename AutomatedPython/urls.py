@@ -34,5 +34,11 @@ urlpatterns = [
     url(r'^LendingClub/NewOriginationData/InitialClean/completed/$', Tasks_views.completed, name='completed'),
     url(r'^LendingClub/NewOriginationData/InitialClean/$', Tasks_views.LC_new_orig_data_clean, name='LC_NewOriginationData_Clean'),
     url(r'^LendingClub/NewOriginationData/$', Tasks_views.LC_new_orig_data_home, name='LC_NewOriginationData_home'),
+    url(r'^LendingClub/NewOriginationData/CombineAppFiles/completed/$', Tasks_views.completed, name='completed'),
+    url(r'^LendingClub/NewOriginationData/CombineAppFiles/$', Tasks_views.LC_new_orig_data_combine_app_files, name='LC_NewOriginationData_CombineAppFiles'),
+    url(r'^LendingClub/NewOriginationData/ChargeOffs/completed/$', Tasks_views.completed_with_output, name='completed_CO'),
+    url(r'^LendingClub/NewOriginationData/ChargeOffs/$', Tasks_views.LC_new_orig_data_chargeoffs, name='LC_NewOriginationData_ChargeOffs'),
+    url(r'^LendingClub/NewOriginationData/CleanCombinedData/completed/$', Tasks_views.completed, name='completed'),
+    url(r'^LendingClub/NewOriginationData/CleanCombinedData/$', Tasks_views.LC_new_orig_data_clean_combined_data, name='LC_NewOriginationData_CleanCombinedData'),
     url(r'^admin/', admin.site.urls),
 ]

@@ -69,5 +69,29 @@ class PeerAndHistoricalChartsSector(models.Model):
     
 class LendingClub_Initial_New_Origination_Data_Cleaning(models.Model):
     
-    FileLocation = models.TextField(default = "")
+    BaseFileLocation = models.TextField(default = "C:\\Users\\gcole\\Documents\\LendingClub\\")
+    FileName = models.TextField(default = "")
+    OutputFileLocation = models.TextField(default = "C:\\Users\\gcole\\Documents\\LendingClub\\CleanedLCData\\")
+    pub_date = models.DateTimeField('date published', default = timezone.now())
+    
+class LendingClub_Combine_LC_App_Files(models.Model):
+    
+    BaseFileDirectory = models.TextField(default = "C:\\Users\\gcole\\Documents\\LendingClub\\CleanedLCData\\")
+    pub_date = models.DateTimeField('date published', default = timezone.now())
+
+class LendingClub_ChargeOffs(models.Model):
+    
+    BaseFileDirectory = models.TextField(default = "C:/Users/gcole/Documents/LendingClub/PaymentHistoryData/")
+    PaymentHistoryFile = models.TextField(default = "C:/Users/gcole/Documents/LendingClub/PaymentHistoryData/PaymentHistoryData_Raw_Investor.csv")
+    MedianRecoveryRate = models.FloatField(default = 0)
+    MeanRecoveryRate = models.FloatField(default = 0)
+    RunTime = models.FloatField(default = 0)
+    pub_date = models.DateTimeField('date published', default = timezone.now())
+
+class LendingClub_CleanCombinedApplications(models.Model):
+    
+    ApplicationFileLocation = models.TextField(default = "C:/Users/gcole/Documents/LendingClub/CleanedLCData/LCStatsAll.csv")
+    OutputFileLocation = models.TextField(default = "C:/Users/gcole/Documents/LendingClub/CleanedLCData/LCStatsAll_Cleaned.csv")
+    WPSOutputFileLocation = models.TextField(default = "C:/Users/gcole/Documents/LendingClub/CleanedLCData/LCStatsAll_WPS_Cleaned.csv")
+    RunTime = models.FloatField(default = 0)
     pub_date = models.DateTimeField('date published', default = timezone.now())

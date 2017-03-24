@@ -2,36 +2,23 @@ from django.shortcuts import redirect, render
 from django.http import HttpResponse
 from django.core.exceptions import ValidationError
 from django.utils.datastructures import MultiValueDictKeyError
-import pyautogui
 import sys
 
-from Tasks.models import PrimaryTasks, UpdatingCompanyDataStepOne, UpdatingCompanyDataStepTwo, CreateNewDataPullFile, MergeNewCompanyData, PeerAndHistoricalChartsSector, LendingClub_Initial_New_Origination_Data_Cleaning
-from Tasks.forms import PrimaryTasksForm, UpdatingCompanyDataStepOneForm, UpdatingCompanyDataStepTwoForm, CreateNewDataPullFileForm, MergeNewCompanyDataForm, PeerAndHistoricalChartsSectorForm, LendingClub_Initial_New_Origination_Data_CleaningForm
+from Tasks.models import PrimaryTasks, UpdatingCompanyDataStepOne, UpdatingCompanyDataStepTwo, CreateNewDataPullFile, MergeNewCompanyData, PeerAndHistoricalChartsSector, LendingClub_Initial_New_Origination_Data_Cleaning, LendingClub_Combine_LC_App_Files, LendingClub_ChargeOffs, LendingClub_CleanCombinedApplications
+
+from Tasks.forms import PrimaryTasksForm, UpdatingCompanyDataStepOneForm, UpdatingCompanyDataStepTwoForm, CreateNewDataPullFileForm, MergeNewCompanyDataForm, PeerAndHistoricalChartsSectorForm, LendingClub_Initial_New_Origination_Data_CleaningForm, LendingClub_Combine_LC_App_FilesForm, LendingClub_ChargeOffsForm, LendingClub_CleanCombinedApplicationsForm
+
 from .PullBBGFields_New import Update_Step1, Update_Step2, CreateBBGPullFile, MergeNewCompanies
 from .HistoricalCharts_New import RunPeerGroupsAndHistoricalChartsSector, LoadFiles
 from .InitialCleanFileFromLCWebsite import LCCleanFile
+from .CombineLCAppFiles import CombineFiles
+from .LCChargeOffs import ChargeOffs
+from .LC_CleanCombinedFiles import ProcessCombinedFiles
 
 # Create your views here.
 def home_page(request):
-    avail_tasks = PrimaryTasks.objects.get(id=1)
-    #pyautogui.click(28,1053)
-    return render(request, 'home.html', {'list': avail_tasks})
+    return render(request, 'home.html',)
 
-def find_updates_annual(request):
-    Update_Step1(QuarterOrAnnual = 'Annual')
-    return render(request, 'new_task.html')
-
-def find_updates_quarter(request):
-    Update_Step1(QuarterOrAnnual = 'Quarter')
-    return render(request, 'new_task.html')
-
-def update_annual(request):
-    Update_Step2(QuarterOrAnnual = 'Annual')
-    return render(request, 'new_task.html')
-
-def update_quarter(request):
-    Update_Step2(QuarterOrAnnual = 'Quarter')
-    return render(request, 'new_task.html')
 
 def findata_home(request):
     return render(request, 'FinData.html',)
@@ -39,11 +26,13 @@ def findata_home(request):
 
 
 
-def fin_data_step_two_home(request):
-    return render(request, 'fin_data_step_two.html', {'form': UpdatingCompanyDataStepTwoForm()})
 
 
 def fin_data_update_step_one(request):
+    header_code = 'Find Updates to Historical Data'
+    title_of_page = 'Find information to update'
+    code_url = 'UpdateStepOne'
+
     if request.method == 'POST':
         form = UpdatingCompanyDataStepOneForm(data=request.POST)
         if form.is_valid():
@@ -61,11 +50,42 @@ def fin_data_update_step_one(request):
             print(lenUpdateQuarterly)
             return redirect('/FinData/UpdateStepOne/completed/')
         else:
-            return render(request, 'fin_data_step_one.html', {'form': form})
+            return render(request, 'form_base.html', {'form': form, 'header_code': header_code, 'title_of_page':title_of_page, 'code_url':code_url,})
     else:
-        return render(request, 'fin_data_step_one.html', {'form': UpdatingCompanyDataStepOneForm()})
+        return render(request, 'form_base.html', {'form': UpdatingCompanyDataStepOneForm(), 'header_code': header_code, 'title_of_page':title_of_page, 'code_url':code_url,})
 
+def fin_data_update_step_two(request):
+    header_code = 'Update Historical Data'
+    title_of_page = 'Update Information'
+    code_url = 'UpdateStepTwo'
+
+    if request.method == 'POST':
+        form = UpdatingCompanyDataStepTwoForm(data=request.POST)
+        if form.is_valid():
+            form.save()
+            task = UpdatingCompanyDataStepTwo.objects.last()
+            Update_Step2(QuarterOrAnnual = 'Annual',
+                     AnnualFile = task.ExistingAnnualFile, 
+                     QuarterFile = task.ExistingQuarterFile,
+                     AnnualUpdateFile = task.NewAnnualFile, 
+                     QuarterUpdateFile = task.NewQuarterFile)
+            Update_Step2(QuarterOrAnnual = 'Quarterly',
+                     AnnualFile = task.ExistingAnnualFile, 
+                     QuarterFile = task.ExistingQuarterFile,
+                     AnnualUpdateFile = task.NewAnnualFile, 
+                     QuarterUpdateFile = task.NewQuarterFile)
+            return redirect('/FinData/UpdateStepTwo/completed/')
+        else:
+            return render(request, 'form_base.html', {'form': form, 'header_code': header_code, 'title_of_page':title_of_page, 'code_url':code_url,})
+    else:
+        return render(request, 'form_base.html', {'form': UpdatingCompanyDataStepTwoForm(), 'header_code': header_code, 'title_of_page':title_of_page, 'code_url':code_url,})
+
+    
 def findata_newcompany(request):
+    header_code = 'Enter New Companies To Retrieve Data'
+    title_of_page = 'New Companies'
+    code_url = 'findata_newcompany'
+
     if request.method == 'POST':
         form = CreateNewDataPullFileForm(data=request.POST)
         if form.is_valid():
@@ -80,11 +100,15 @@ def findata_newcompany(request):
             CreateBBGPullFile(tickers, task.filepathfor_Excel, task.sector, task.numperiodsQuarter, task.FileForColumnsQuarter,'Quarterly')
             return redirect('/FinData/NewCompany/completed/')
         else:
-            return render(request, 'FinDataNewCompany.html', {'form': form})
+            return render(request, 'form_base.html', {'form': form, 'header_code': header_code, 'title_of_page':title_of_page, 'code_url':code_url,})
     else:
-        return render(request, 'FinDataNewCompany.html', {'form': CreateNewDataPullFileForm()})
+        return render(request, 'form_base.html', {'form': CreateNewDataPullFileForm(), 'header_code': header_code, 'title_of_page':title_of_page, 'code_url':code_url,})
 
 def findatamerge_newcompany(request):
+    header_code = 'Merge New Companies'
+    title_of_page = 'Merge New Companies'
+    code_url = 'findata_newcompanymerge'
+
     if request.method == 'POST':
         form = MergeNewCompanyDataForm(data=request.POST)
         if form.is_valid():
@@ -93,12 +117,16 @@ def findatamerge_newcompany(request):
             MergeNewCompanies(task.AnnualFile, task.NewAnnualFile, task.QuarterFile, task.NewQuarterFile)
             return redirect('/FinData/NewCompanyMerge/completed/')
         else:
-            return render(request, 'FinDataNewCompanyMerge.html', {'form': form})
+            return render(request, 'form_base.html', {'form': form, 'header_code': header_code, 'title_of_page':title_of_page, 'code_url':code_url,})
     else:
-        return render(request, 'FinDataNewCompanyMerge.html', {'form': MergeNewCompanyDataForm()})
+        return render(request, 'form_base.html', {'form': MergeNewCompanyDataForm(), 'header_code': header_code, 'title_of_page':title_of_page, 'code_url':code_url,})
         
     
 def findata_runcharts(request):
+    header_code = 'Create Charts'
+    title_of_page = 'Charting'
+    code_url = 'findata_runcharts'
+
     
     def prep_charts(item):
         item = [s.replace("'", "") for s in item.split(',')]
@@ -137,45 +165,18 @@ def findata_runcharts(request):
                                                                              )
             return redirect('/FinData/Charts/completed/')
         else:
-            return render(request, 'FinDataCharts.html', {'form': form})
+            return render(request, 'form_base.html', {'form': form, 'header_code': header_code, 'title_of_page':title_of_page, 'code_url':code_url,})
     else:
-        return render(request, 'FinDataCharts.html', {'form': PeerAndHistoricalChartsSectorForm()})
+        return render(request, 'form_base.html', {'form': PeerAndHistoricalChartsSectorForm(), 'header_code': header_code, 'title_of_page':title_of_page, 'code_url':code_url,})
 
         
-def fin_data_update_step_two(request):
-    if request.method == 'POST':
-        form = UpdatingCompanyDataStepTwoForm(data=request.POST)
-        if form.is_valid():
-            form.save()
-            task = UpdatingCompanyDataStepTwo.objects.last()
-            Update_Step2(QuarterOrAnnual = 'Annual',
-                     AnnualFile = task.ExistingAnnualFile, 
-                     QuarterFile = task.ExistingQuarterFile,
-                     AnnualUpdateFile = task.NewAnnualFile, 
-                     QuarterUpdateFile = task.NewQuarterFile)
-            Update_Step2(QuarterOrAnnual = 'Quarterly',
-                     AnnualFile = task.ExistingAnnualFile, 
-                     QuarterFile = task.ExistingQuarterFile,
-                     AnnualUpdateFile = task.NewAnnualFile, 
-                     QuarterUpdateFile = task.NewQuarterFile)
-            return redirect('/FinData/UpdateStepTwo/completed/')
-        else:
-            return render(request, 'fin_data_step_two.html', {'form': form})
-    else:
-        return render(request, 'fin_data_step_two.html', {'form': UpdatingCompanyDataStepTwoForm()})
     
-def update_step_one(request):
-    form = UpdatingCompanyDataStepOneForm(data = request.POST)
-    if form.is_valid():
-        UpdatingCompanyDataStepOne.objects.create(QuarterOrAnnual=QorA, filepathfor_Excel=Excel_file_path)
-        return redirect('FinData/UpdateStepOne/completed')
-    else:
-        return render(request, 'fin_data_step_one.html', {"form": form})
     
 def completed(request):
     return render(request, 'new_task.html')
 
-
+def completed_with_output(request, output):
+    return render(request, 'new_task.html', {'output_from_program':output})
 
 
 def LC_new_orig_data_home(request):
@@ -183,14 +184,77 @@ def LC_new_orig_data_home(request):
 
 
 def LC_new_orig_data_clean(request):
+    header_code = 'LC Clean New Data'
+    title_of_page = 'Clean New Lending Club Origination Data'
+    code_url = 'LC_NewOriginationData_Clean'
+    
     if request.method == 'POST':
         form = LendingClub_Initial_New_Origination_Data_CleaningForm(data=request.POST)
         if form.is_valid():
             form.save()
             task = LendingClub_Initial_New_Origination_Data_Cleaning.objects.last()
-            LCCleanFile(task.FileLocation)
+            LCCleanFile(FileName = task.FileName, BaseFileLocation = task.BaseFileLocation, BaseOutputLocation = task.OutputFileLocation)
             return redirect('/LendingClub/NewOriginationData/InitialClean/completed/')
         else:
-            return render(request, 'LC_NewOrigData_Clean.html', {'form': form})
+            return render(request, 'form_base.html', {'form': form, 'header_code': header_code, 'title_of_page':title_of_page, 'code_url':code_url,})
     else:
-        return render(request, 'LC_NewOrigData_Clean.html', {'form': LendingClub_Initial_New_Origination_Data_CleaningForm()})
+        return render(request, 'form_base.html', {'form': LendingClub_Initial_New_Origination_Data_CleaningForm(), 'header_code': header_code, 'title_of_page':title_of_page, 'code_url':code_url,})
+    
+def LC_new_orig_data_combine_app_files(request):
+    header_code = 'LC Combine Cleaned App Files'
+    title_of_page = 'Combine Cleaned Application Files'
+    code_url = 'LC_NewOriginationData_CombineAppFiles'
+    
+    if request.method == 'POST':
+        form = LendingClub_Combine_LC_App_FilesForm(data=request.POST)
+        if form.is_valid():
+            form.save()
+            task = LendingClub_Combine_LC_App_Files.objects.last()
+            CombineFiles(BaseDir = task.BaseFileDirectory)
+            return redirect('/LendingClub/NewOriginationData/CombineAppFiles/completed/')
+        else:
+            return render(request, 'form_base.html', {'form': form, 'header_code': header_code, 'title_of_page':title_of_page, 'code_url':code_url,})
+    else:
+        return render(request, 'form_base.html', {'form': LendingClub_Combine_LC_App_FilesForm(), 'header_code': header_code, 'title_of_page':title_of_page, 'code_url':code_url,})
+    
+def LC_new_orig_data_chargeoffs(request):
+    header_code = 'LC Charge Offs'
+    title_of_page = 'Determine Charge-Offs'
+    code_url = 'LC_NewOriginationData_ChargeOffs'
+    
+    if request.method == 'POST':
+        form = LendingClub_ChargeOffsForm(data=request.POST)
+        if form.is_valid():
+            form.save()
+            task = LendingClub_ChargeOffs.objects.last()
+            (MeanChargeOff, MedianChargeOff, RunTime) = ChargeOffs(PaymentHistoryFile = task.PaymentHistoryFile, BaseFileDirectory = task.BaseFileDirectory)
+            task.MedianRecoveryRate = MedianChargeOff
+            task.MeanRecoveryRate = MeanChargeOff
+            task.RunTime = RunTime
+            task.save()
+            #return redirect('/LendingClub/NewOriginationData/ChargeOffs/completed/')
+            output_result = "Median Recovery Rate: " + "%.2f" % (MedianChargeOff*100) + "% Mean Recovery Rate: " + "%.2f" % (MeanChargeOff*100) + "%"
+            return render(request, 'new_task.html', {'output_from_program':output_result})
+        else:
+            return render(request, 'form_base.html', {'form': form, 'header_code': header_code, 'title_of_page':title_of_page, 'code_url':code_url,})
+    else:
+        return render(request, 'form_base.html', {'form': LendingClub_ChargeOffsForm(), 'header_code': header_code, 'title_of_page':title_of_page, 'code_url':code_url,})
+    
+def LC_new_orig_data_clean_combined_data(request):
+    header_code = 'LC Prep App Data for ML'
+    title_of_page = 'Prepare Cleaned Application Files for Machine Learning'
+    code_url = 'LC_NewOriginationData_CleanCombinedData'
+    
+    if request.method == 'POST':
+        form = LendingClub_CleanCombinedApplicationsForm(data=request.POST)
+        if form.is_valid():
+            form.save()
+            task = LendingClub_CleanCombinedApplications.objects.last()
+            RunTime = ProcessCombinedFiles(ApplicationDataLocation = task.ApplicationFileLocation, OutputFile = task.OutputFileLocation, WPS_OutputFile = task.WPSOutputFileLocation)
+            task.RunTime = RunTime
+            task.save()
+            return redirect('/LendingClub/NewOriginationData/CleanCombinedData/completed/')
+        else:
+            return render(request, 'form_base.html', {'form': form, 'header_code': header_code, 'title_of_page':title_of_page, 'code_url':code_url,})
+    else:
+        return render(request, 'form_base.html', {'form': LendingClub_CleanCombinedApplicationsForm(), 'header_code': header_code, 'title_of_page':title_of_page, 'code_url':code_url,})

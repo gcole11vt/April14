@@ -19,7 +19,7 @@ from xlsxwriter.utility import xl_rowcol_to_cell
 from matplotlib.backends.backend_pdf import PdfPages
 from IPython.display import display, HTML
 
-startTime = datetime.now()
+#startTime = datetime.now()
 
 #PURPOSE: CREATE PEER GROUP OUTPUT FOR INDUSTRIES
 #Note: Titles don't work if import seaborn
@@ -406,6 +406,22 @@ def LoadFiles(AnnualDataFile =  "C:\\Users\\gcole\\Documents\\BloombergData\\BBG
 
     return (df_all, df_allq, df_allLTM, TickersList)
 
+def RunAllTickers(AnnualDF = df_all, QuarterDF = df_allq, LTMDF = df_allLTM, MarketData = TickersList,
+                                           BaseSaveLocation = 'BloombergData\\PeerGroups\\', HistoricalChartBaseSaveLocation = 'BloombergData\\PeerGroups\\CompanyData\\',
+                                           SavePDFs = True, ShowPDF = False, Sector = True, DontWork = [], OutputToExcel = False, IncludeLTM = True,
+                                           ChartColumns = ['SALES_REV_TURN', 'SalesGrowth', 'BS_TOT_ASSET', 'TangibleAsset_Coverage', 'GC_ADJ_EBITDA', 'Adj_EBITDA_Margin', 'TotalLeverageAdj', 'NetLeverageAdj', 'EBITDA_to_Interest', 'CapEx_to_AdjEBITDA', 'ROA', 'UnleveragedFCFROA','EV_to_EBITDA_GC_Adj', 'Price_to_EPS_NTM', 'EQY_DVD_YLD_IND', 'CURRENT_TRR_1YR'],
+                                           HistoricalChartColumns = ['SALES_REV_TURN', 'SalesGrowth', 'GC_ADJ_EBITDA', 'EBITDAGrowth', 'ROTA', 'UnleveragedFCFROTA', 'ROA', 'UnleveragedFCFROA', 'TangibleAsset_Coverage', 'Adj_EBITDA_Margin', 'Gross_Margin', 'TotalLeverageAdj', 'NetLeverageAdj', 'EBITDA_to_Interest', 'CapEx_to_AdjEBITDA'],
+                                           BaseSpreadSheetColumns = ['Ticker', 'LATEST_PERIOD_END_DT_FULL_RECORD'],
+                                           ):
+    
+    
+    if(AnnualDF.empty == True):
+        print('Did not pass data frames to function.  Loading standard files...')
+        (AnnualDF, QuarterDF, LTMDF, MarketData) = LoadFiles()
+    TickersList_Reduced = AnnualDF['Ticker'].unique()
+    MassProduceHistoricalCharts(AnnualDF, QuarterDF, LTMDF, TickersList_Reduced, sector, HistoricalChartBaseSaveLocation, DontWork, BaseSpreadSheetColumns, HistoricalChartColumns, ColumnFormatting = DictionaryOfChartFormats(), IncludeLTM = IncludeLTM, SavePDF = SavePDFs)
+    
+
 
 def RunPeerGroupsAllSectors(AnnualDF = df_all, QuarterDF = df_allq, LTMDF = df_allLTM, MarketData = TickersList, BaseSaveLocation = 'BloombergData\\PeerGroups\\', SavePDFs = True, ShowPDF = False, Sector = True, DontWork = [], OutputToExcel = False,
                             ChartColumns = ['SALES_REV_TURN', 'SalesGrowth', 'BS_TOT_ASSET', 'TangibleAsset_Coverage', 'GC_ADJ_EBITDA', 'Adj_EBITDA_Margin', 'TotalLeverageAdj', 'NetLeverageAdj', 'EBITDA_to_Interest', 'CapEx_to_AdjEBITDA', 'ROA', 'UnleveragedFCFROA','EV_to_EBITDA_GC_Adj', 'Price_to_EPS_NTM', 'EQY_DVD_YLD_IND', 'CURRENT_TRR_1YR'],
@@ -571,7 +587,7 @@ ColumnFormatting = DictionaryOfChartFormats()
 
 #tempLTM.groupby('GICS_INDUSTRY_NAME').agg({'EV_to_EBITDA_GC_Adj': [np.mean, np.median, 'count'], 'Forward_EV_to_EBITDA_GC_Adj': [np.mean, np.median, 'count'], 'Price_to_EPS_NTM': [np.mean, np.median, 'count'], 'Est_EBITDA_Growth': [np.mean, np.median, 'count']})
 
-print(datetime.now() - startTime)
+#print(datetime.now() - startTime)
 
 
     

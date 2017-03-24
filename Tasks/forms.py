@@ -2,7 +2,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 
-from Tasks.models import PrimaryTasks, UpdatingCompanyDataStepOne, UpdatingCompanyDataStepTwo, CreateNewDataPullFile, MergeNewCompanyData, PeerAndHistoricalChartsSector, LendingClub_Initial_New_Origination_Data_Cleaning
+from Tasks.models import PrimaryTasks, UpdatingCompanyDataStepOne, UpdatingCompanyDataStepTwo, CreateNewDataPullFile, MergeNewCompanyData, PeerAndHistoricalChartsSector, LendingClub_Initial_New_Origination_Data_Cleaning, LendingClub_Combine_LC_App_Files, LendingClub_ChargeOffs, LendingClub_CleanCombinedApplications
 
 EMPTY_ITEM_ERROR = 'You cannot leave this empty'
 QorAChoices = (
@@ -309,13 +309,76 @@ class LendingClub_Initial_New_Origination_Data_CleaningForm(forms.models.ModelFo
     
     class Meta:
         model = LendingClub_Initial_New_Origination_Data_Cleaning
-        fields = ('FileLocation',)
+        fields = ('BaseFileLocation', 'FileName', 'OutputFileLocation')
         labels = {
-            'FileLocation':_('File Location'),
+            'BaseFileLocation':_('Original File Location'),
+            'FileName':_('File Name'),
+            'OutputFileLocation':_('Cleaned File Location'),
             }
         widgets= {
-            'FileLocation': forms.fields.TextInput(attrs={
-                'placeholder':'Exact File Location',
+            'BaseFileLocation': forms.fields.TextInput(attrs={
+                'placeholder':'Base File Location',
+                'class': 'col-sm-10 input-md',
+                }),
+            'FileName': forms.fields.TextInput(attrs={
+                'placeholder':'File Name. Include .csv',
+                'class': 'col-sm-10 input-md',
+                }),
+            'OutputBaseFileLocation': forms.fields.TextInput(attrs={
+                'placeholder':'Cleaned File Location',
+                'class': 'col-sm-10 input-md',
+                }),
+        }    
+        
+class LendingClub_Combine_LC_App_FilesForm(forms.models.ModelForm):
+    class Meta:
+        model = LendingClub_Combine_LC_App_Files
+        fields = ('BaseFileDirectory',)
+        labels = {
+            'BaseFileDirectory':_('Base File Directory'),
+            }
+        widgets= {
+            'BaseFileDirectory': forms.fields.TextInput(attrs={
+                'class': 'col-sm-10 input-md',
+                }),
+        }    
+        
+class LendingClub_ChargeOffsForm(forms.models.ModelForm):
+    
+    class Meta:
+        model = LendingClub_ChargeOffs
+        fields = ('PaymentHistoryFile', 'BaseFileDirectory',)
+        labels = {
+            'PaymentHistoryFile':_('Payment History File'),
+            'BaseFileDirectory':_('Base File Directory'),
+            }
+        widgets= {
+            'PaymentHistoryFile': forms.fields.TextInput(attrs={
+                'class': 'col-sm-10 input-md',
+                }),
+            'BaseFileDirectory': forms.fields.TextInput(attrs={
+                'class': 'col-sm-10 input-md',
+                }),
+        }    
+        
+class LendingClub_CleanCombinedApplicationsForm(forms.models.ModelForm):
+    
+    class Meta:
+        model = LendingClub_CleanCombinedApplications
+        fields = ('ApplicationFileLocation', 'OutputFileLocation','WPSOutputFileLocation')
+        labels = {
+            'ApplicationFileLocation':_('Location of Apps'),
+            'OutputFileLocation':_('Output File Location'),
+            'WPSOutputFileLocation':_('WPS Output File Location'),
+            }
+        widgets= {
+            'ApplicationFileLocation': forms.fields.TextInput(attrs={
+                'class': 'col-sm-10 input-md',
+                }),
+            'OutputFileLocation': forms.fields.TextInput(attrs={
+                'class': 'col-sm-10 input-md',
+                }),
+            'WPSOutputFileLocation': forms.fields.TextInput(attrs={
                 'class': 'col-sm-10 input-md',
                 }),
         }    
