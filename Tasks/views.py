@@ -4,16 +4,18 @@ from django.core.exceptions import ValidationError
 from django.utils.datastructures import MultiValueDictKeyError
 import sys
 
-from Tasks.models import PrimaryTasks, UpdatingCompanyDataStepOne, UpdatingCompanyDataStepTwo, CreateNewDataPullFile, MergeNewCompanyData, PeerAndHistoricalChartsSector, LendingClub_Initial_New_Origination_Data_Cleaning, LendingClub_Combine_LC_App_Files, LendingClub_ChargeOffs, LendingClub_CleanCombinedApplications
+from Tasks.models import PrimaryTasks, UpdatingCompanyDataStepOne, UpdatingCompanyDataStepTwo, CreateNewDataPullFile, MergeNewCompanyData, PeerAndHistoricalChartsSector, BenchmarkCharts, FinDataLoadFiles, LendingClub_Initial_New_Origination_Data_Cleaning, LendingClub_Combine_LC_App_Files, LendingClub_ChargeOffs, LendingClub_CleanCombinedApplications
 
-from Tasks.forms import PrimaryTasksForm, UpdatingCompanyDataStepOneForm, UpdatingCompanyDataStepTwoForm, CreateNewDataPullFileForm, MergeNewCompanyDataForm, PeerAndHistoricalChartsSectorForm, LendingClub_Initial_New_Origination_Data_CleaningForm, LendingClub_Combine_LC_App_FilesForm, LendingClub_ChargeOffsForm, LendingClub_CleanCombinedApplicationsForm
+from Tasks.forms import PrimaryTasksForm, UpdatingCompanyDataStepOneForm, UpdatingCompanyDataStepTwoForm, CreateNewDataPullFileForm, MergeNewCompanyDataForm, PeerAndHistoricalChartsSectorForm, BenchmarkChartsForm, FinDataLoadFilesForm, LendingClub_Initial_New_Origination_Data_CleaningForm, LendingClub_Combine_LC_App_FilesForm, LendingClub_ChargeOffsForm, LendingClub_CleanCombinedApplicationsForm
 
 from .PullBBGFields_New import Update_Step1, Update_Step2, CreateBBGPullFile, MergeNewCompanies
-from .HistoricalCharts_New import RunPeerGroupsAndHistoricalChartsSector, LoadFiles
+from .HistoricalCharts_New import RunPeerGroupsAndHistoricalChartsSector, LoadFiles, CreatePeerGroupBenchmarkCharts
 from .InitialCleanFileFromLCWebsite import LCCleanFile
 from .CombineLCAppFiles import CombineFiles
 from .LCChargeOffs import ChargeOffs
 from .LC_CleanCombinedFiles import ProcessCombinedFiles
+
+
 
 # Create your views here.
 def home_page(request):
@@ -147,6 +149,7 @@ def findata_runcharts(request):
             print(task.TickersFileLoc)
             (df_all, df_allq, df_allLTM, TickersList) = LoadFiles(AnnualDataFile =  task.AnnualFileLoc, QuarterDataFile = task.QuarterFileLoc, TickerFile = task.TickersFileLoc)
 
+            print(df_all.head())
             RunPeerGroupsAndHistoricalChartsSector(AnnualDF = df_all, 
                                                    QuarterDF = df_allq, 
                                                    LTMDF = df_allLTM, 
@@ -169,7 +172,72 @@ def findata_runcharts(request):
     else:
         return render(request, 'form_base.html', {'form': PeerAndHistoricalChartsSectorForm(), 'header_code': header_code, 'title_of_page':title_of_page, 'code_url':code_url,})
 
-        
+
+def findata_LoadFiles(request):    
+    header_code = 'Load Historical Financaial Data'
+    title_of_page = 'Load Historical Financaial Data'
+    code_url = 'findata_loadfiles'
+    
+    if request.method == 'POST':
+        form = FinDataLoadFilesForm(data=request.POST)
+        if form.is_valid():
+            form.save()
+            task = FinDataLoadFiles.objects.last()
+            print(task.AnnualFileLoc)
+            print(task.QuarterFileLoc)
+            print(task.TickersFileLoc)
+            (df_all, df_allq, df_allLTM, TickersList) = LoadFiles(AnnualDataFile =  task.AnnualFileLoc, QuarterDataFile = task.QuarterFileLoc, TickerFile = task.TickersFileLoc)
+            return redirect('/FinData/Charts/completed/')
+        else:
+            return render(request, 'form_base.html', {'form': form, 'header_code': header_code, 'title_of_page':title_of_page, 'code_url':code_url,})
+    else:
+        return render(request, 'form_base.html', {'form': FinDataLoadFilesForm(), 'header_code': header_code, 'title_of_page':title_of_page, 'code_url':code_url,})
+    
+    
+def findata_benchmarkcharts(request):
+    header_code = 'Create Benchmark Charts'
+    title_of_page = 'Benchmark Charting'
+    code_url = 'findata_benchmarkcharts'
+
+    
+    def prep_charts(item):
+        item = [s.replace("'", "") for s in item.split(',')]
+        item = [s.replace("[", "") for s in item]
+        item = [s.replace("]", "") for s in item]
+        item = [s.lstrip() for s in item]
+        item = [s.rstrip() for s in item]
+        return item
+    
+    
+    if request.method == 'POST':
+        form = BenchmarkChartsForm(data=request.POST)
+        if form.is_valid():
+            form.save()
+            task = BenchmarkCharts.objects.last()
+            print(task.AnnualFileLoc)
+            print(task.QuarterFileLoc)
+            print(task.TickersFileLoc)
+            (df_all, df_allq, df_allLTM, TickersList) = LoadFiles(AnnualDataFile =  task.AnnualFileLoc, QuarterDataFile = task.QuarterFileLoc, TickerFile = task.TickersFileLoc)
+            
+            print(df_all.head())
+            CreatePeerGroupBenchmarkCharts(AnnualDF = df_all, 
+                                           QuarterDF = df_allq, 
+                                           LTMDF = df_allLTM, 
+                                           MarketData = TickersList,
+                                           BaseSaveLocation = task.BaseSaveLoc,
+                                           SavePDFs = True, ShowPDF = False, 
+                                           IncludeLTM = task.IncludeLTMData,
+                                           ChartColumns = prep_charts(task.ChartColumns),
+                                           BaseCompany = task.BaseCompany,
+                                           CompanyList = prep_charts(task.CompanyList),
+                                           IncludeBaseCompanyInPeers = task.IncludeBaseCompanyInPeers,
+                                           )
+            
+            return redirect('/FinData/BenchmarkCharts/completed/')
+        else:
+            return render(request, 'form_base.html', {'form': form, 'header_code': header_code, 'title_of_page':title_of_page, 'code_url':code_url,})
+    else:
+        return render(request, 'form_base.html', {'form': BenchmarkChartsForm(), 'header_code': header_code, 'title_of_page':title_of_page, 'code_url':code_url,})
     
     
 def completed(request):

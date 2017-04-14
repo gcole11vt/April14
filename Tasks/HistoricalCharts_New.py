@@ -18,6 +18,7 @@ import matplotlib.ticker as tickermatplot
 from xlsxwriter.utility import xl_rowcol_to_cell
 from matplotlib.backends.backend_pdf import PdfPages
 from IPython.display import display, HTML
+import seaborn as sns
 
 #startTime = datetime.now()
 
@@ -535,6 +536,55 @@ def CreateBalanceSheetChartsPeerGroup(AnnualDF = df_all, QuarterDF = df_allq, LT
     StackedBS_Assets(LTM_df, Companies, Show = False, SavePDF = True)
     pdf_pages.close()
 
+    
+def CreatePeerGroupBenchmarkCharts(AnnualDF = df_all, QuarterDF = df_allq, LTMDF = df_allLTM, MarketData = TickersList,
+                                           BaseSaveLocation = 'BloombergData\\PeerGroups\\', HistoricalChartBaseSaveLocation = 'BloombergData\\PeerGroups\\CompanyData\\',
+                                           SavePDFs = True, ShowPDF = False, Sector = True, OutputToExcel = False, IncludeLTM = True,
+                                           #ChartColumns = ['SALES_REV_TURN', 'SalesGrowth', 'BS_TOT_ASSET', 'TangibleAsset_Coverage', 'GC_ADJ_EBITDA', 'Adj_EBITDA_Margin', 'TotalLeverageAdj', 'NetLeverageAdj', 'EBITDA_to_Interest', 'CapEx_to_AdjEBITDA', 'ROA', 'UnleveragedFCFROA','EV_to_EBITDA_GC_Adj', 'Price_to_EPS_NTM', 'EQY_DVD_YLD_IND', 'CURRENT_TRR_1YR'],
+                                           ChartColumns = 'SalesGrowth',
+                                           BaseCompany = 'XOM US', CompanyList = [], IncludeBaseCompanyInPeers = False):
+    def getyear(timevalue):
+        if(int(timevalue.strftime('%m'))<6):
+            timevalue = timevalue.replace(year= timevalue.year-1, month=12, day=31)
+        else:
+            timevalue = timevalue.replace(year= timevalue.year, month=12, day=31)
+        return timevalue.strftime('%Y')
+    
+    sns.set()
+    BenchmarkSet = set(CompanyList)
+    BenchmarkSet.add(BaseCompany)
+    Peers = BenchmarkSet.copy()
+    
+    if(IncludeBaseCompanyInPeers == False):
+        Peers.remove(BaseCompany)
+    
+    pdf_pages = PdfPages('C://Users/gcole/Documents/testing1.pdf')
+    
+    benchmark_df = AnnualDF[AnnualDF['Ticker'].isin(BenchmarkSet)]
+    benchmark_df['LATEST_PERIOD_END_DT_FULL_RECORD'].fillna(benchmark_df['LATEST_PERIOD_END_DT_FULL_RECORD'].max(), inplace=True)
+    benchmark_df['Year'] = benchmark_df['LATEST_PERIOD_END_DT_FULL_RECORD'].apply(getyear)
+    benchmark_df = benchmark_df.sort_values('LATEST_PERIOD_END_DT_FULL_RECORD')
+    
+    for col in ChartColumns:
+        print(col)
+        fix, ax = plt.subplots(figsize=(11.69,8.27))
+        _ = benchmark_df[benchmark_df['Ticker'].isin(Peers)].groupby('Year')[col].agg('median').plot(x='Year', y=col, color='red', ax=ax)
+        _ = benchmark_df[benchmark_df['Ticker']==BaseCompany].plot(kind='bar', x='Year', y=col, ax=ax)
+        plt.legend(['Peer Median', BaseCompany])
+        plt.title(col)
+        plt.ylabel('add me')
+        plt.xlabel('add me')
+        actual_annotation = 'Peer Group: ' + ", ".join([x.replace(' US', '') for x in Peers])
+        plt.annotate(actual_annotation, xy = (0.95,0.90), xycoords = 'figure fraction', xytext=(0.5, 0.0), textcoords = 'figure fraction', horizontalalignment = 'center', verticalalignment='bottom', fontsize=8)
+        #saveLoc = col
+        #plt.savefig('C://Users/gcole/Documents/' + col + '.png')
+        #plt.close('all')
+        pdf_pages.savefig()
+    pdf_pages.close()
+    #Finish Me
+    
+    
+    
 #-----------------------------------------------------------------------------------------------------------------
 #-----------------------------------------------------------------------------------------------------------------
 #   CODE

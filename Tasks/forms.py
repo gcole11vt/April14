@@ -2,7 +2,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 
-from Tasks.models import PrimaryTasks, UpdatingCompanyDataStepOne, UpdatingCompanyDataStepTwo, CreateNewDataPullFile, MergeNewCompanyData, PeerAndHistoricalChartsSector, LendingClub_Initial_New_Origination_Data_Cleaning, LendingClub_Combine_LC_App_Files, LendingClub_ChargeOffs, LendingClub_CleanCombinedApplications
+from Tasks.models import PrimaryTasks, UpdatingCompanyDataStepOne, UpdatingCompanyDataStepTwo, CreateNewDataPullFile, MergeNewCompanyData, PeerAndHistoricalChartsSector, BenchmarkCharts, FinDataLoadFiles, LendingClub_Initial_New_Origination_Data_Cleaning, LendingClub_Combine_LC_App_Files, LendingClub_ChargeOffs, LendingClub_CleanCombinedApplications
 
 EMPTY_ITEM_ERROR = 'You cannot leave this empty'
 QorAChoices = (
@@ -77,6 +77,13 @@ INDUSTRY_CHOICES = (
         #('Water Utilities', 'Water Utilities'),
         ('Wireless Telecommunication Ser', 'Wireless Telecommunication Ser'),
         )
+
+BENCHMARKCHART_CHOICES = (
+        ('SalesGrowth', 'SalesGrowth'),
+        ('TotalLeverageAdj', 'TotalLeverageAdj'),
+        )
+
+
 
 class PrimaryTasksForm(forms.ModelForm):
     
@@ -304,6 +311,86 @@ class PeerAndHistoricalChartsSectorForm(forms.models.ModelForm):
             
 
         }    
+
+        
+class BenchmarkChartsForm(forms.models.ModelForm):
+    
+    ChartColumns = forms.MultipleChoiceField(
+        widget=forms.CheckboxSelectMultiple,
+        choices=BENCHMARKCHART_CHOICES,
+        label='Charts',
+        )
+    
+    
+    
+    class Meta:
+        model = BenchmarkCharts
+        fields = ('AnnualFileLoc', 'QuarterFileLoc', 'TickersFileLoc','BaseSaveLoc', 'IncludeLTMData', 'ChartColumns', 'BaseCompany', 'CompanyList', 'IncludeBaseCompanyInPeers')
+        
+        labels = {
+            'AnnualFileLoc':_('Existing Annual Data'),
+            'QuarterFileLoc':_('Existing Quarterly Data'),
+            'TickersFileLoc':_('Existing Market Data'),
+            'BaseSaveLoc':_('Base File Save Location'),
+            'IncludeLTMData':_('Use LTM Data?'),
+            'BaseCompany':_('Base Company'),
+            'CompanyList':_('Peers'),
+            'IncludeBaseCompanyInPeers':_('Include Base Company In Peers'),
+            }
+        widgets= {
+            'AnnualFileLoc': forms.fields.TextInput(attrs={
+                'class': 'col-sm-10 input-md',
+                }),
+            'QuarterFileLoc': forms.fields.TextInput(attrs={
+                'class': 'col-sm-10 input-md',
+                }),
+            'TickersFileLoc': forms.fields.TextInput(attrs={
+                'class': 'col-sm-10 input-md',
+                }),
+            'BaseSaveLoc': forms.fields.TextInput(attrs={
+                'class': 'col-sm-10 input-md',
+                }),
+            'IncludeLTMData': forms.fields.TextInput(attrs={
+                'class': 'col-sm-10 input-md',
+                }),
+            'BaseCompany': forms.fields.TextInput(attrs={
+                'class': 'col-sm-10 input-md',
+                }),
+            'CompanyList': forms.fields.TextInput(attrs={
+                'class': 'col-sm-10 input-md',
+                }),
+            
+            'IncludeBaseCompanyInPeers': forms.fields.TextInput(attrs={
+                'class': 'col-sm-10 input-md',
+                }),
+
+        }    
+        
+class FinDataLoadFilesForm(forms.models.ModelForm):
+    
+    
+    class Meta:
+        model = FinDataLoadFiles
+        fields = ('AnnualFileLoc', 'QuarterFileLoc', 'TickersFileLoc')
+        
+        labels = {
+            'AnnualFileLoc':_('Existing Annual Data'),
+            'QuarterFileLoc':_('Existing Quarterly Data'),
+            'TickersFileLoc':_('Existing Market Data'),
+            }
+        widgets= {
+            'AnnualFileLoc': forms.fields.TextInput(attrs={
+                'class': 'col-sm-10 input-md',
+                }),
+            'QuarterFileLoc': forms.fields.TextInput(attrs={
+                'class': 'col-sm-10 input-md',
+                }),
+            'TickersFileLoc': forms.fields.TextInput(attrs={
+                'class': 'col-sm-10 input-md',
+                }),           
+
+        }    
+        
 
 class LendingClub_Initial_New_Origination_Data_CleaningForm(forms.models.ModelForm):
     

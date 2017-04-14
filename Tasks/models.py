@@ -67,6 +67,24 @@ class PeerAndHistoricalChartsSector(models.Model):
     BaseSpreadSheetColumns = models.TextField(default = "'Ticker', 'LATEST_PERIOD_END_DT_FULL_RECORD'")
     IndustryOptions = models.TextField(default='', blank=True)
     
+class BenchmarkCharts(models.Model):
+    
+    AnnualFileLoc = models.TextField(default = "C:\\Users\\gcole\\Documents\\BloombergData\\BBG_CombinedAnnual.csv")
+    QuarterFileLoc = models.TextField(default ="C:\\Users\\gcole\\Documents\\BloombergData\\BBG_CombinedQuarterly.csv")
+    TickersFileLoc = models.TextField(default ="C:\\Users\\gcole\\Documents\\BloombergData\TickerList.xlsx")
+    BaseSaveLoc = models.TextField(default ="C:\\Users\\gcole\\Documents\\BloombergData\\PeerGroups\\BenchmarkCharts")
+    IncludeLTMData = models.BooleanField(default=True)
+    ChartColumns = models.TextField(default = "'SalesGrowth', 'EBITDAGrowth', 'ROTA', 'UnleveragedFCFROTA', 'ROA', 'UnleveragedFCFROA', 'TangibleAsset_Coverage', 'Adj_EBITDA_Margin', 'Gross_Margin', 'TotalLeverageAdj', 'NetLeverageAdj', 'EBITDA_to_Interest', 'CapEx_to_AdjEBITDA'")
+    BaseCompany = models.TextField(default = "XOM US")
+    CompanyList = models.TextField(default = "'CVX US', 'OXY US'")
+    IncludeBaseCompanyInPeers = models.BooleanField(default=False)
+    
+class FinDataLoadFiles(models.Model):
+    
+    AnnualFileLoc = models.TextField(default = "C:\\Users\\gcole\\Documents\\BloombergData\\BBG_CombinedAnnual.csv")
+    QuarterFileLoc = models.TextField(default ="C:\\Users\\gcole\\Documents\\BloombergData\\BBG_CombinedQuarterly.csv")
+    TickersFileLoc = models.TextField(default ="C:\\Users\\gcole\\Documents\\BloombergData\TickerList.xlsx")
+    
 class LendingClub_Initial_New_Origination_Data_Cleaning(models.Model):
     
     BaseFileLocation = models.TextField(default = "C:\\Users\\gcole\\Documents\\LendingClub\\")
